@@ -76,6 +76,7 @@ class DenseNet:
                  renew_logs=False,
                  reduction=1.0,
                  bc_mode=False,
+                 data_augmentation=0,
                  **kwargs):
         """
         Class to implement networks from this paper
@@ -115,6 +116,7 @@ class DenseNet:
         self.bc_mode = bc_mode
         # compression rate at the transition layers
         self.reduction = reduction
+        self.data_augmentation = data_augmentation
         if not bc_mode:
             print("Build %s model with %d blocks, "
                   "%d composite layers each." % (
@@ -193,8 +195,8 @@ class DenseNet:
 
     @property
     def model_identifier(self):
-        return "{}_growth_rate={}_depth={}_dataset_{}".format(
-            self.model_type, self.growth_rate, self.depth, self.dataset_name)
+        return "{}_growth_rate={}_depth={}_dataset_{}_augmented_{}".format(
+            self.model_type, self.growth_rate, self.depth, self.dataset_name, self.data_augmentation)
 
     def save_model(self, global_step=None):
         self.saver.save(self.sess, self.save_path, global_step=global_step)

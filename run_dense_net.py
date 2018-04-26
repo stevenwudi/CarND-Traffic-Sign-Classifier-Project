@@ -1,6 +1,6 @@
 import argparse
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 from models import DenseNet
 from data_providers.utils import get_data_provider_by_name
 
@@ -15,6 +15,7 @@ train_params_cifar = {
     'shuffle': 'every_epoch',  # None, once_prior_train, every_epoch
     'normalization': 'by_chanels',  # None, divide_256, divide_255, by_chanels
     'use_Y': False,  # use only Y channel
+    'data_augmentation': 0,  # [0, 1]
 }
 
 train_params_svhn = {
@@ -120,12 +121,18 @@ if __name__ == '__main__':
 
     model_params = vars(args)
 
+    import json
+
+    with open('model_params.json', 'w') as fp:
+        json.dump(model_params, fp)
+
     if not args.train and not args.test:
         print("You should train or test your network. Please check params.")
         exit()
 
     # some default params dataset/architecture related
     train_params = get_train_params_by_name(args.dataset)
+    model_params['data_augmentation'] = train_params['data_augmentation']
     print("Params:")
     for k, v in model_params.items():
         print("\t%s: %s" % (k, v))

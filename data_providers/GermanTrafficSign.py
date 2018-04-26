@@ -74,7 +74,7 @@ def augment_all_images(initial_images):
 
 class GTSRDataSet(ImagesDataSet):
     def __init__(self, images, labels, n_classes, shuffle, normalization,
-                 augmentation=True, mean=None, std=None):
+                 augmentation, mean=None, std=None):
         """
         Args:
             images: 4D numpy array
@@ -145,7 +145,7 @@ class GTSRDataProvider(DataProvider):
 
     def __init__(self, save_path=None, validation_combined=False,
                  shuffle=None, normalization=None,
-                 one_hot=True, _n_classes=43, data_augmentation=True, use_Y=False, **kwargs):
+                 one_hot=True, _n_classes=43, data_augmentation=False, use_Y=False, **kwargs):
         """
         Args:
             save_path: `str`
@@ -182,7 +182,7 @@ class GTSRDataProvider(DataProvider):
                 images=X_train, labels=y_train,
                 n_classes=self.n_classes, shuffle=shuffle,
                 normalization=normalization,
-                augmentation=self.data_augmentation,
+                augmentation=False,
                 mean=self._means, std=self._stds)
             self.validation = GTSRDataSet(
                 images=X_valid, labels=y_valid,
