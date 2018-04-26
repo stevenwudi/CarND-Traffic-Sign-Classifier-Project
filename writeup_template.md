@@ -19,8 +19,17 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
+[image_examples_top]: ./examples/top_examples.png "Top Examples"
+[image_examples_bottom]: ./examples/bottom_examples.png "Bottom Examples"
+[train_examples]: ./examples/train_examples.png "Train Examples"
+[test_examples]: ./examples/test_examples.png "Test Examples"
+[label_stats]: ./examples/label_stats.png "label_stats"
+[image_YUV]: ./examples/YUV_image.png "YUV_image"
+
 [image1]: ./examples/visualization.jpg "Visualization"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
+
+
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./examples/placeholder.png "Traffic Sign 1"
 [image5]: ./examples/placeholder.png "Traffic Sign 2"
@@ -36,91 +45,123 @@ The goals / steps of this project are the following:
 
 #### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf. You can use this template as a guide for writing the report. The submission includes the project code.
 
-You're reading it! and here is a link to my [project code](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
+You're reading it! and here is a link to my [project code](https://github.com/stevenwudi/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb)
 
 ### Data Set Summary & Exploration
 
-#### 1. Provide a basic summary of the data set. In the code, the analysis should be done using python, numpy and/or pandas methods rather than hardcoding results manually.
+#### 1. Provide a basic summary of the data set. 
 
-I used the pandas library to calculate summary statistics of the traffic
+I used the numpy library to calculate summary statistics of the traffic
 signs data set:
 
-* The size of training set is ?
-* The size of the validation set is ?
-* The size of test set is ?
-* The shape of a traffic sign image is ?
-* The number of unique classes/labels in the data set is ?
+* The size of training set is 34799.
+* The size of the validation set is 4410.
+* The size of test set is 12630
+* The shape of a traffic sign image is 32*32*3
+* The number of unique classes/labels in the data set is 43.
 
 #### 2. Include an exploratory visualization of the dataset.
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the data ...
+Here is an exploratory visualization of the data set. 
+I first plot the traffic sign classes with the most number of training examples and the classes with the least number of training examples.
 
-![alt text][image1]
+<!-- ![alt text][image_examples_top] -->
+
+<!-- ![alt text][image_examples_bottom] -->
+
+The complete visualisation with 10 samples per class is shown as below:
+
+Train data: 
+<!--  ![alt text][train_examples] -->
+
+Test data: 
+<!--  ![alt text][test_examples] -->
+
+The label statistics in terms of percentage is shown as below and it can be seen that the different class distribution is quite equal btween training and testing data.
+<!--  ![label_stats][label_stats] -->
+
 
 ### Design and Test a Model Architecture
 
 #### 1. Describe how you preprocessed the image data. What techniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc. (OPTIONAL: As described in the "Stand Out Suggestions" part of the rubric, if you generated additional data for training, describe why you decided to generate additional data, how you generated the data, and provide example images of the additional data. Then describe the characteristics of the augmented training set like number of images in the set, number of images for each class, etc.)
 
-As a first step, I decided to convert the images to grayscale because ...
 
-Here is an example of a traffic sign image before and after grayscaling.
+#### First attempt
 
-![alt text][image2]
+1) preprcoessing image data: (pixel - 128)/ 128
 
-As a last step, I normalized the image data because ...
+2) Model architecture: LeNet.
 
-I decided to generate additional data because ... 
+The learning rate set from 0.001 and number of epochs sets as 100.
+With this preprocessing step, I only achieved very low validation accuracy of ~0.78 and training accuracy ~0.997. This is a clear sign of overfitting.
 
-To add more data to the the data set, I used the following techniques because ... 
+#### Second attempt
 
-Here is an example of an original image and an augmented image:
+Better image preprocessing: change the RGB image to YUV color space, we have a validation accuracy of **~0.915** and training accuracy **~0.997** which is still under the required 0.93 validation accuracy.
 
-![alt text][image3]
+If I use only Y channel space, we have a validation accuracy of **~0.941** and training accuracy **~0.991**. Now it's the first time the model has surpassed the required accuracy, hourray!
 
-The difference between the original data set and the augmented data set is the following ... 
+With data normalisation scheme:  X=(X-X_mean)/(X_std), I further boost the validation accuracy to **~0.950** and test accuracy of **~0.933**.  Data normalisation help the network to learn better.
+
+The following are the image examples of YUV:
+
+![image_YUV][image_YUV]
+
+ #### Third attempt
+ 
+ Better model architecture: (1) DenseNet [Densely Connected Convolutional Networks](https://arxiv.org/abs/1608.06993)
 
 
-#### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
+ ##### 2.  final model densenet
 
 My final model consisted of the following layers:
 
 | Layer         		|     Description	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
-| RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
- 
+| Input         		| 32x32x3 YUV image   							| 
+| Convolution 3x3     	| 1x1 stride, same padding, outputs size 32x32	|
+| Dense Block			| growth rate 12								|
+| Transition Block     	| avg pool,  outputs size 16x16 	       		|
+| Dense Block	        | growth rate 12	   							|
+| Transition Block 		| avg pool,  outputs size 8x8 		  			|
+| Dense Block			| growth rate 12								|
+| Transition Block 		|avg pool,  outputs 4x4 		     			|
+| FC		            | Softmax activation, output 43					|
 
+With data normalisation scheme:  X=(X-X_mean)/(X_std), I further boost the validation accuracy to **~0.988** and test accuracy of **~0.979**.  With no data augmentation.
 
-#### 3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
+#### 3. Training details. 
 
-To train the model, I used an ....
+optimizer: tensorflow MomentumOptimizer,
 
-#### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
+batchsize: 128,
+
+number of epochs: 100,
+
+learning rate: 0.1, divide by 10 on 50th and 75th epoch. (Interestingly, intial learning rate is too large for the network: high accuracy (>0.95) for training set and low (~0.1) for the validation set. The validation accuracy only start to increase after 50th epoch. I guess it's an indication of the large learning rate chosen).
+
+#### 4. Steps in a table
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+
+| Model         | input              |training accuracy          | validation  accuracy  | test  accuracy |
+| ------------- |:------------------:|:-------------------------:|:---------------------:|:--------------:|
+|---------------|--------------------|---------------------------|-----------------------|----------------|
+| LeNet         | (pixel - 128)/ 128 |0.997                      |0.78                   |-               |
+| LeNet         | YUV                |0.997                      |0.915                  |-               | 
+| LeNet         | Y channel only     |0.991                      |0.941                  |-               |
+|---------------|--------------------|---------------------------|-----------------------|----------------|
+| DenseNet      | YUV                |1.000                      |0.988                  |0.979           |
+| DenseNet      | Y channel only     |1.000                      |0.988                  |0.971           |
+| DenseNet      | YUV (augmentated)  |1.000                      |0.988                  |0.971           |
+|---------------|--------------------|---------------------------|-----------------------|----------------|
 
 If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
-* What were some problems with the initial architecture?
-* How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
-* Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+(1) The LeNet architecture was tried because it's the easiest with already implemented. The network didn't achieve good validation accuracy due to its simple architecture with limited parameters.
+(2) The Densenet was tried later because it has won the best paper award in CVPR2017. The DenseNets have several advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the numer of parameters.
+(3) The learning rate is reduced from the originally 0.1(for CIFAR10 dataset) to 0.5.
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
- 
+
 
 ### Test a Model on New Images
 
