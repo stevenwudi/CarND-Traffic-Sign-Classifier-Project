@@ -72,6 +72,13 @@ def augment_all_images(initial_images):
     return new_images
 
 
+def RGB2YUV(image_data):
+    yuv_image_data = []
+    for i in range(len(image_data)):
+        yuv_image_data.append(cv2.cvtColor(image_data[i], cv2.COLOR_RGB2YUV))
+    return np.array(yuv_image_data)
+
+
 class GTSRDataSet(ImagesDataSet):
     def __init__(self, images, labels, n_classes, shuffle, normalization,
                  augmentation, mean=None, std=None):
@@ -118,8 +125,8 @@ class GTSRDataSet(ImagesDataSet):
             images, labels = self.shuffle_images_and_labels(self.images, self.labels)
         else:
             images, labels = self.images, self.labels
-        if self.augmentation:
-            images = augment_all_images(images)
+        # if self.augmentation:
+        #     images = augment_all_images(images)
         self.epoch_images = images
         self.epoch_labels = labels
 
@@ -145,7 +152,8 @@ class GTSRDataProvider(DataProvider):
 
     def __init__(self, save_path=None, validation_combined=False,
                  shuffle=None, normalization=None,
-                 one_hot=True, _n_classes=43, data_augmentation=False, use_Y=False, **kwargs):
+                 one_hot=True, _n_classes=43, data_augmentation=False, use_YUV=True,
+                 use_Y=False, **kwargs):
         """
         Args:
             save_path: `str`
@@ -170,6 +178,7 @@ class GTSRDataProvider(DataProvider):
         self.data_augmentation = data_augmentation
         self._save_path = save_path
         self.one_hot = one_hot
+        self.use_YUV = use_YUV
         self.use_Y = use_Y
 
         # add train and validations datasets
@@ -234,11 +243,16 @@ class GTSRDataProvider(DataProvider):
         X_train, y_train = train['features'], train['labels']
         X_valid, y_valid = valid['features'], valid['labels']
         X_test, y_test = test['features'], test['labels']
+
         if self.one_hot:
             y_train = self.labels_to_one_hot(y_train)
             y_valid = self.labels_to_one_hot(y_valid)
             y_test = self.labels_to_one_hot(y_test)
-        if self.use_Y:
+        if self.use_YUV:
+            X_train = RGB2YUV(X_train)
+            X_valid = RGB2YUV(X_valid)
+            X_test = RGB2YUV(X_test)
+        if self.use_YUV and self.use_Y:
             X_train = np.expand_dims(X_train[:, :, :, 0], axis=3)
             X_valid = np.expand_dims(X_valid[:, :, :, 0], axis=3)
             X_test = np.expand_dims(X_test[:, :, :, 0], axis=3)

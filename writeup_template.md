@@ -1,4 +1,4 @@
-# **Traffic Sign Recognition (Ask for 10 hour extension! the write up will be updated on 5 a.m. GMT) Sorry! ** 
+# **Traffic Sign Recognition** 
 
 ## Writeup
 
@@ -25,6 +25,8 @@ The goals / steps of this project are the following:
 [test_examples]: ./examples/test_examples.png "Test Examples"
 [label_stats]: ./examples/label_stats.png "label_stats"
 [image_YUV]: ./examples/YUV_image.png "YUV_image"
+[test_wrong_rgb]:  ./examples/test_wrong_rgb.png "test_wrong_rgb"
+[test_wrong_YUV]: ./examples/test_wrong_YUV.png "test_wrong_YUV"
 
 [image1]: ./examples/visualization.jpg "Visualization"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
@@ -147,20 +149,41 @@ My final model results were:
 | Model         | input              |training accuracy          | validation  accuracy  | test  accuracy |
 | ------------- |:------------------:|:-------------------------:|:---------------------:|:--------------:|
 |---------------|--------------------|---------------------------|-----------------------|----------------|
-| LeNet         | (pixel - 128)/ 128 |0.997                      |0.78                   |-               |
+| LeNet         | (pixel - 128)/ 128 |0.997                      |0.780                  |-               |
 | LeNet         | YUV                |0.997                      |0.915                  |-               | 
 | LeNet         | Y channel only     |0.991                      |0.941                  |-               |
 |---------------|--------------------|---------------------------|-----------------------|----------------|
-| DenseNet      | YUV                |1.000                      |0.988                  |0.979           |
-| DenseNet      | Y channel only     |1.000                      |0.988                  |0.971           |
-| DenseNet      | YUV (augmentated)  |1.000                      |0.988                  |0.971           |
+| DenseNet      | RGB                |1.000                      |0.988                  |0.975           |
+| DenseNet      | RGB (poly lr, 500 epochs) |1.000               |0.990                  |0.982           |
+| DenseNet      | YUV                |1.000                      |0.998                  |**0.988**       |
+| DenseNet      | Y channel only     |1.000                      |0.993                  |**0.989**       |
 |---------------|--------------------|---------------------------|-----------------------|----------------|
 
 If an iterative approach was chosen:
+
 (1) The LeNet architecture was tried because it's the easiest with already implemented. The network didn't achieve good validation accuracy due to its simple architecture with limited parameters.
+
 (2) The Densenet was tried later because it has won the best paper award in CVPR2017. The DenseNets have several advantages: they alleviate the vanishing-gradient problem, strengthen feature propagation, encourage feature reuse, and substantially reduce the numer of parameters.
+
 (3) The learning rate is reduced from the originally 0.1(for CIFAR10 dataset) to 0.5.
 
+(4) Poly learning rate 
+```python
+learning_rate = train_params['initial_learning_rate'] * (1 - epoch / n_epochs) ** 0.9
+```
+
+##### 5. Wrongly classified images in test set
+
+The wrongly classfied images in test set in shown as below (on the right is the predicted image example in the training set):
+
+*RGB image as input:*
+
+![test_wrong_rgb][test_wrong_rgb]
+
+*YUV image as input:*
+![test_wrong_YUV][test_wrong_YUV]
+
+As it can be seen from above that the mistaken cases made by input transformed into YUV space makes more sense.
 
 
 ### Test a Model on New Images

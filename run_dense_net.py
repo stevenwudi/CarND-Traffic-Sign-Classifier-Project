@@ -5,16 +5,17 @@ from models import DenseNet
 from data_providers.utils import get_data_provider_by_name
 
 train_params_cifar = {
-    'batch_size': 128,
-    'n_epochs': 100,
-    'initial_learning_rate': 0.01,
+    'batch_size': 64,
+    'n_epochs': 500,
+    'initial_learning_rate': 0.05,
     'reduce_lr_epoch_1': 50,  # epochs * 0.5
     'reduce_lr_epoch_2': 75,  # epochs * 0.75
     'validation_set': True,
     'validation_split': None,  # None or float
     'shuffle': 'every_epoch',  # None, once_prior_train, every_epoch
     'normalization': 'by_chanels',  # None, divide_256, divide_255, by_chanels
-    'use_Y': False,  # use only Y channel
+    'use_YUV': True,
+    'use_Y': True,  # use only Y channel
     'data_augmentation': 0,  # [0, 1]
 }
 
@@ -133,6 +134,7 @@ if __name__ == '__main__':
     # some default params dataset/architecture related
     train_params = get_train_params_by_name(args.dataset)
     model_params['data_augmentation'] = train_params['data_augmentation']
+    model_params['use_Y'] = train_params['use_Y']
     print("Params:")
     for k, v in model_params.items():
         print("\t%s: %s" % (k, v))

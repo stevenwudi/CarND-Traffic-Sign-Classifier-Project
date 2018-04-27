@@ -77,6 +77,8 @@ class DenseNet:
                  reduction=1.0,
                  bc_mode=False,
                  data_augmentation=0,
+                 use_YUV=True,
+                 use_Y=False,
                  **kwargs):
         """
         Class to implement networks from this paper
@@ -117,6 +119,8 @@ class DenseNet:
         # compression rate at the transition layers
         self.reduction = reduction
         self.data_augmentation = data_augmentation
+        self.use_YUV = use_YUV
+        self.use_Y = use_Y
         if not bc_mode:
             print("Build %s model with %d blocks, "
                   "%d composite layers each." % (
@@ -195,8 +199,18 @@ class DenseNet:
 
     @property
     def model_identifier(self):
-        return "{}_growth_rate={}_depth={}_dataset_{}_augmented_{}".format(
-            self.model_type, self.growth_rate, self.depth, self.dataset_name, self.data_augmentation)
+        if self.use_YUV and not self.use_Y:
+            return "{}_growth_rate={}_depth={}_dataset_{}_augmented_{}_use_YUV_{}".format(
+                self.model_type, self.growth_rate, self.depth, self.dataset_name,
+                self.data_augmentation, self.use_YUV)
+        elif self.use_YUV and self.use_Y:
+            return "{}_growth_rate={}_depth={}_dataset_{}_augmented_{}_use_Y_only".format(
+                self.model_type, self.growth_rate, self.depth, self.dataset_name,
+                self.data_augmentation)
+        else:
+            return "{}_growth_rate={}_depth={}_dataset_{}_augmented_{}".format(
+                self.model_type, self.growth_rate, self.depth, self.dataset_name,
+                self.data_augmentation)
 
     def save_model(self, global_step=None):
         self.saver.save(self.sess, self.save_path, global_step=global_step)
@@ -402,7 +416,7 @@ class DenseNet:
 
         with tf.variable_scope("Transition_to_classes"):
             logits = self.transition_layer_to_classes(output)
-        prediction = tf.nn.softmax(logits)
+        self.prediction = tf.nn.softmax(logits)
 
         # Losses
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
@@ -418,7 +432,7 @@ class DenseNet:
             cross_entropy + l2_loss * self.weight_decay)
 
         correct_prediction = tf.equal(
-            tf.argmax(prediction, 1),
+            tf.argmax(self.prediction, 1),
             tf.argmax(self.labels, 1))
         self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -432,9 +446,11 @@ class DenseNet:
         for epoch in range(1, n_epochs + 1):
             print("\n", '-' * 30, "Train epoch: %d" % epoch, '-' * 30, '\n')
             start_time = time.time()
-            if epoch == reduce_lr_epoch_1 or epoch == reduce_lr_epoch_2:
-                learning_rate = learning_rate / 10
-                print("Decrease learning rate, new lr = %f" % learning_rate)
+            learning_rate = train_params['initial_learning_rate'] * (1 - epoch / n_epochs) ** 0.9
+            print("Decrease learning rate, new lr = %f" % learning_rate)
+            # if epoch == reduce_lr_epoch_1 or epoch == reduce_lr_epoch_2:
+            #     learning_rate = learning_rate / 10
+            #     print("Decrease learning rate, new lr = %f" % learning_rate)
 
             print("Training...")
             loss, acc = self.train_one_epoch(
@@ -507,3 +523,23 @@ class DenseNet:
         mean_loss = np.mean(total_loss)
         mean_accuracy = np.mean(total_accuracy)
         return mean_loss, mean_accuracy
+
+    def predictions_test(self, data, batch_size):
+        num_examples = data.num_examples
+        total_prediction = []
+        true_prediction = []
+
+        for i in range(num_examples // batch_size):
+            batch = data.next_batch(batch_size)
+            feed_dict = {
+                self.images: batch[0],
+                self.labels: batch[1],
+                self.is_training: False,
+            }
+            fetches = [self.prediction, self.labels]
+            prediction, gt = self.sess.run(fetches, feed_dict=feed_dict)
+            total_prediction.append(prediction)
+            true_prediction.append(gt)
+
+        return total_prediction, true_prediction
+
