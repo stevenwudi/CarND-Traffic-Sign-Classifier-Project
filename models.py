@@ -405,6 +405,8 @@ class DenseNet:
                 out_features=self.first_output_features,
                 kernel_size=3)
 
+        self.first_conv_output = output
+
         # add N required blocks
         for block in range(self.total_blocks):
             with tf.variable_scope("Block_%d" % block):
@@ -542,4 +544,26 @@ class DenseNet:
             true_prediction.append(gt)
 
         return total_prediction, true_prediction
+
+    def predictions_one_image(self, images):
+
+        feed_dict = {
+            self.images: images,
+            self.is_training: False,
+        }
+        fetches = [self.prediction]
+        predictions = self.sess.run(fetches, feed_dict=feed_dict)
+
+        return predictions
+
+    def get_intermediate_output(self, image):
+
+        feed_dict = {
+            self.images: image,
+            self.is_training: False,
+        }
+        fetches = [self.first_conv_output]
+        first_conv_output = self.sess.run(fetches, feed_dict=feed_dict)
+
+        return first_conv_output
 

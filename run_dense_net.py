@@ -146,6 +146,14 @@ if __name__ == '__main__':
     data_provider = get_data_provider_by_name(args.dataset, train_params)
     print("Initialize the model..")
     model = DenseNet(data_provider=data_provider, **model_params)
+
+    import tensorflow as tf
+    with tf.Session() as sess:
+        # `sess.graph` provides access to the graph used in a `tf.Session`.
+        writer = tf.summary.FileWriter("/tmp/log/...", sess.graph)
+        writer.close()
+
+
     if args.train:
         print("Data provider train images: ", data_provider.train.num_examples)
         model.train_all_epochs(train_params)

@@ -28,16 +28,9 @@ The goals / steps of this project are the following:
 [test_wrong_rgb]:  ./examples/test_wrong_rgb.png "test_wrong_rgb"
 [test_wrong_YUV]: ./examples/test_wrong_YUV.png "test_wrong_YUV"
 
-[image1]: ./examples/visualization.jpg "Visualization"
-[image2]: ./examples/grayscale.jpg "Grayscaling"
-
-
-[image3]: ./examples/random_noise.jpg "Random Noise"
-[image4]: ./examples/placeholder.png "Traffic Sign 1"
-[image5]: ./examples/placeholder.png "Traffic Sign 2"
-[image6]: ./examples/placeholder.png "Traffic Sign 3"
-[image7]: ./examples/placeholder.png "Traffic Sign 4"
-[image8]: ./examples/placeholder.png "Traffic Sign 5"
+[test_new_images]: ./examples/test_new_images.png "test_new_images"
+[test_new_images_prob]: ./examples/test_new_images_prob.png "test_new_images_prob"
+[intermediate_output_visualisation]: ./examples/intermediate_output_visualisation.png "intermediate_output_visualisation"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
@@ -67,20 +60,20 @@ signs data set:
 Here is an exploratory visualization of the data set. 
 I first plot the traffic sign classes with the most number of training examples and the classes with the least number of training examples.
 
-<!-- ![alt text][image_examples_top] -->
+![alt text][image_examples_top] 
 
-<!-- ![alt text][image_examples_bottom] -->
+![alt text][image_examples_bottom] 
 
 The complete visualisation with 10 samples per class is shown as below:
 
 Train data: 
-<!--  ![alt text][train_examples] -->
+ ![alt text][train_examples] 
 
 Test data: 
-<!--  ![alt text][test_examples] -->
+![alt text][test_examples] 
 
 The label statistics in terms of percentage is shown as below and it can be seen that the different class distribution is quite equal btween training and testing data.
-<!--  ![label_stats][label_stats] -->
+  ![label_stats][label_stats] 
 
 
 ### Design and Test a Model Architecture
@@ -174,7 +167,7 @@ learning_rate = train_params['initial_learning_rate'] * (1 - epoch / n_epochs) *
 
 ##### 5. Wrongly classified images in test set
 
-The wrongly classfied images in test set in shown as below (on the right is the predicted image example in the training set):
+The wrongly classfied images in test set in shown as below (*on the right is the predicted image example in the training set*):
 
 *RGB image as input:*
 
@@ -183,53 +176,34 @@ The wrongly classfied images in test set in shown as below (on the right is the 
 *YUV image as input:*
 ![test_wrong_YUV][test_wrong_YUV]
 
-As it can be seen from above that the mistaken cases made by input transformed into YUV space makes more sense.
+As it can be seen from above that the mistaken cases made by input transformed into YUV space makes more sense: comparing with the correct class visualisation on the right, the mistakenly predicted labels on the left are visually very similar.
 
 
 ### Test a Model on New Images
 
-#### 1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
+#### New images and results:
 
-Here are five German traffic signs that I found on the web:
-
-![alt text][image4] ![alt text][image5] ![alt text][image6] 
-![alt text][image7] ![alt text][image8]
-
-The first image might be difficult to classify because ...
-
-#### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
-
+ I have chosen a great variety traffic signs on the web: (1) standardised German traffic signs that I found from the [wikipedia](https://en.wikipedia.org/wiki/Road_signs_in_Germany); (2) standardize [Chinese traffic signs](http://www.bjjtgl.gov.cn/jgj) and (3) some American traffic signs.
+ 
 Here are the results of the prediction:
 
-| Image			        |     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| Stop Sign      		| Stop sign   									| 
-| U-turn     			| U-turn 										|
-| Yield					| Yield											|
-| 100 km/h	      		| Bumpy Road					 				|
-| Slippery Road			| Slippery Road      							|
+![test_new_images][test_new_images]
+
+#### Result analysis
+
+Plot the prediction probability using ``tf.nn.top_k`` we can see the visualisation as belows. It can be seen that it achieves 100% prediction rate if it is from the sets of standrdised German traffic signs from wikipedia. But if the traffic signs categories never appeared in the training categories, it will generate noisy softmax prediction
+
+![test_new_images_prob][test_new_images_prob]
 
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
 
-#### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
-
-The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
-
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
-
-| Probability         	|     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| .60         			| Stop sign   									| 
-| .20     				| U-turn 										|
-| .05					| Yield											|
-| .04	      			| Bumpy Road					 				|
-| .01				    | Slippery Road      							|
-
-
-For the second image ... 
-
-### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
+### Visualizing the Neural Network 
 #### 1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
 
+Below if the visualisation of the first conv layer output. The first conv layer output obvisouly detect edges etc. features.
 
+![intermediate_output_visualisation][intermediate_output_visualisation]
+
+That's it, everything for the project two. 
+
+THE END!

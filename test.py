@@ -214,6 +214,4 @@ def draw_sample_incorrectmatrix(datasettxt, sortedBuckets, incorrectmatix, datas
 
     plt.show()
 
-draw_sample_incorrectmatrix(
-    'Test set 10 ten incorrect sample images  using RGB as input, right most is the predicted image in the training set',
-    sortedBuckets, incorrectmatrix, test['features'])
+draw_sample_incorrectmatrix('Test set 10 ten incorrect sample images  using RGB as input, right most is the predicted image in the training set', sortedBuckets, incorrectmatrix, test['features'])
